@@ -43,7 +43,7 @@ int main(int argc, char **argv)
         return 1;
     }
 
-    open_file(argv[3],"RGBD");
+    open_file(argv[3],"RGBD_GF");
     // Retrieve paths to images
     vector<string> vstrImageFilenamesRGB;
     vector<string> vstrImageFilenamesD;

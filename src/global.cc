@@ -21,7 +21,7 @@ void open_file(char *file_char,string mode)
     cout << file_id << endl;
 
     string file_name = "/home/wangshi/test/ORB_SLAM_TEST/" + file_id+ "_"+ mode+".csv"; 
-
+	cout << file_name << endl;
     test_output.open(file_name,ios::out|ios::trunc);
     test_output<< "step 1: Preprocess" << "," << "step 2: BA process"<<"," << "step 3: Postprocess"<<endl;
 }

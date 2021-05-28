@@ -199,6 +199,7 @@ void EdgeStereoSE3ProjectXYZ::linearizeOplus() {
   double z = xyz_trans[2];
   double z_2 = z*z;
 
+// 这里xi是特征点的3d坐标
   _jacobianOplusXi(0,0) = -fx*R(0,0)/z+fx*x*R(2,0)/z_2;
   _jacobianOplusXi(0,1) = -fx*R(0,1)/z+fx*x*R(2,1)/z_2;
   _jacobianOplusXi(0,2) = -fx*R(0,2)/z+fx*x*R(2,2)/z_2;
@@ -211,6 +212,7 @@ void EdgeStereoSE3ProjectXYZ::linearizeOplus() {
   _jacobianOplusXi(2,1) = _jacobianOplusXi(0,1)-bf*R(2,1)/z_2;
   _jacobianOplusXi(2,2) = _jacobianOplusXi(0,2)-bf*R(2,2)/z_2;
 
+// 这里xj是camera pose的6dof
   _jacobianOplusXj(0,0) =  x*y/z_2 *fx;
   _jacobianOplusXj(0,1) = -(1+(x*x/z_2)) *fx;
   _jacobianOplusXj(0,2) = y/z *fx;
