@@ -28,14 +28,20 @@
 #include "Thirdparty/g2o/g2o/solvers/linear_solver_dense.h"
 #include "Thirdparty/g2o/g2o/types/types_seven_dof_expmap.h"
 
+#include"Thirdparty/g2o/g2o/core/jacobian_workspace.h"
+
 #include<Eigen/StdVector>
 
 #include "Converter.h"
-
+#include "Jacob_cal_apx.h"
+#include <unordered_map>
+#include <queue>
 #include<mutex>
 #include <unistd.h>
 
 #include "global.h"
+using namespace Eigen;
+using namespace std;
 
 namespace ORB_SLAM2
 {
@@ -444,7 +450,7 @@ int Optimizer::PoseOptimization(Frame *pFrame)
 void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap)
 {    
 // set start time
-    clock_t  start_time,step1_time,step2_time,step3_time;
+    clock_t  start_time,step1_time, step2_time,step3_time,step_gfs1_time,step_gfs2_time;
 
     start_time = clock();
     // Local KeyFrames: First Breath Search from Current Keyframe
@@ -453,6 +459,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     lLocalKeyFrames.push_back(pKF);
     pKF->mnBALocalForKF = pKF->mnId;
 
+    // 把共视帧加进Local KF里
     const vector<KeyFrame*> vNeighKFs = pKF->GetVectorCovisibleKeyFrames();
     for(int i=0, iend=vNeighKFs.size(); i<iend; i++)
     {
@@ -565,6 +572,9 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     const float thHuberMono = sqrt(5.991);
     const float thHuberStereo = sqrt(7.815);
 
+    //Set the mono mode
+    bool  gfs_mono = false;
+
     for(list<MapPoint*>::iterator lit=lLocalMapPoints.begin(), lend=lLocalMapPoints.end(); lit!=lend; lit++)
     {
         MapPoint* pMP = *lit;
@@ -585,7 +595,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
             if(!pKFi->isBad())
             {                
                 const cv::KeyPoint &kpUn = pKFi->mvKeysUn[mit->second];
-
+                gfs_mono = true;
                 // Monocular observation
                 // 虽然fixKF不作为优化对象，但point仍可以加边进行优化
                 if(pKFi->mvuRight[mit->second]<0)
@@ -617,6 +627,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
                 }
                 else // Stereo observation
                 {
+                    gfs_mono = false;
                     Eigen::Matrix<double,3,1> obs;
                     const float kp_ur = pKFi->mvuRight[mit->second];
                     obs << kpUn.pt.x, kpUn.pt.y, kp_ur;
@@ -653,8 +664,141 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
         if(*pbStopFlag)
             return;
 
+    step_gfs1_time = clock();
+
+            //cout << gfs_mono << "!!!" << endl;
+    bool GOOD_FEATURE_SELECT = true;
+    double gfs_ratio = 0.5; //ratio to select feature
+    // 在这里加入Good Feature Select
+    if(GOOD_FEATURE_SELECT)
+    {
+        //cout << "Good Feature Selecting Start!!" << endl;
+        if(gfs_mono) //Mono mode
+        {
+        // Initialize Jacob subset
+        vector <g2o::EdgeSE3ProjectXYZ*> H_subset;
+        vector <g2o::EdgeSE3ProjectXYZ*> H_oriset ;
+
+        //init edge to Hc map
+        // use pointer to save space
+        unordered_map  <g2o::EdgeSE3ProjectXYZ*, Eigen::MatrixXd *> Hc_mat_map; 
+
+        struct my_cmp
+        {
+            bool operator()(pair <g2o::EdgeSE3ProjectXYZ*,double> a,pair <g2o::EdgeSE3ProjectXYZ*,double> b)
+            {
+                return a.second >= b.second;
+            }
+        };
+        priority_queue < pair <g2o::EdgeSE3ProjectXYZ*,double>,std::vector <pair <g2o::EdgeSE3ProjectXYZ*,double>>,my_cmp> logdet_queue;
+
+        Matrix<double,3,3> cov_p = MatrixXd::Zero(3,3);
+        Matrix<double,2,2> cov_z = MatrixXd::Zero(2,2);
+
+        double cov_p_var = 0.001;
+        double cov_z_var = 1;
+
+        cov_p(0,0) = cov_p_var;cov_p(1,1) = cov_p_var;cov_p(2,2) = cov_p_var;
+        cov_z(0,0) = cov_z_var; cov_z(1,1) = cov_z_var;
+
+        H_oriset.assign(vpEdgesMono.begin(),vpEdgesMono.end()); // Copy the original edge set for convinience and understanding
+
+        //unordered_set <int , vector <g2o::EdgeStereoSE3ProjectXYZ*>>  //设计一个和kf对应的所有point
+        //unordered_set <int, Hc_sum>;// the camera_id to Hc_sum now，用来做后续的incremental矩阵形式的计算
+
+        // Calculate the Jacob to Hc for every edge
+        // save to Hc_mat_set
+        for(auto edge_pt = H_oriset.begin(); edge_pt != H_oriset.end(); edge_pt ++)
+        {
+            g2o::EdgeSE3ProjectXYZ* edge = *edge_pt; //提取出这条edge的指针
+            Eigen :: Matrix<double,2,3> jacob_p;
+            Matrix<double,2,6> jacob_x;
+            // calculate Jacob matrix for map point and camera position
+            linearizeOplus_apx_mono(edge,jacob_p,jacob_x);
+
+            //calculate the Hc for this edge
+            Matrix <double,2,2> cov_r = jacob_p * cov_p * jacob_p.transpose() + cov_z;
+            LLT<MatrixXd> chol_cov_r(cov_r);
+            MatrixXd w_r = chol_cov_r.matrixL();
+            MatrixXd H_c_now = w_r.inverse() * jacob_x;
+
+            // save to the map for further use
+            Hc_mat_map.emplace(edge,&H_c_now);
+
+            //
+            MatrixXd Hc_mul = H_c_now.transpose() * H_c_now;
+            logdet_queue.emplace(edge,logdet(Hc_mul));
+
+            // cout << Hc_mul << endl;
+            // cout << logdet(Hc_mul) << endl;
+        }
+
+        // see the size of original Hc_set
+        // cout << "The original Edge set size is" << vpEdgesMono.size() << endl; 
+        // cout << "The original logdet set size is" << logdet_queue.size() << endl; 
+        // cout << "The original KF set size is " << lLocalKeyFrames.size() << endl;
+        // cout << "The original Feature set size is " <<  lLocalMapPoints.size() << endl;
+
+        // directly select former half edges
+
+        int queue_half_size = int(logdet_queue.size()*gfs_ratio);
+
+        vpEdgesMono.clear();// here may need modify
+        for(int i = 0;i < queue_half_size;i ++ )
+        {
+            //cout << i << endl;
+            pair <g2o::EdgeSE3ProjectXYZ*,double> edge = logdet_queue.top();
+            logdet_queue.pop();
+            optimizer.removeEdge(edge.first);
+        }
+
+        while(!logdet_queue.empty())
+        {
+            //cout << i << endl;
+            pair <g2o::EdgeSE3ProjectXYZ*,double> edge = logdet_queue.top();
+            logdet_queue.pop();
+            vpEdgesMono.push_back(edge.first);
+        }
+
+        // cout << "finish remove!" << endl;
+        // cout << "The removed Edge set size is" << vpEdgesMono.size() << endl; 
+
+        //Directly solve for Hc logdet
+
+        /*
+        // Firstly find the max logdet for every keyframe
+        for(auto kf_pt = lLocalKeyFrames.begin(), kf_pt_end=lLocalKeyFrames.end(); kf_pt != kf_pt_end; kf_pt++)
+        {
+            KeyFrame* kf = *kf_pt;
+            // do the loop and find the max logdet edge
+step_1mid2_time
+
+        
+        // Greedy selecting
+        while(H_subset.size() <= gfs_K || !H_oriset.empty()) // not reach the max subset or  original set is not NULL
+        {
+            // find the max index j of original set
+
+
+            // renew the subset and original set
+
+        }
+
+        // Remove remained
+        for(auto edge_pt = H_oriset.begin();edge_pt != H_oriset.end();edge_pt ++)
+        {
+            optimizer.removeEdge(*edge_pt);
+        }
+        */
+        }
+    }
+    
+    step_gfs2_time = clock();
+
     optimizer.initializeOptimization();
+    //cout << "finish Init!" << endl;
     optimizer.optimize(5);
+    //cout << "finish opt!" << endl;
 
     bool bDoMore= true;
 
@@ -776,13 +920,15 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     }
     step3_time = clock();
 
-    double step1_consm,step2_consm,step3_consm;
+    double step1_consm,step_gfs1_consm,step_gfs2_consm,step2_consm,step3_consm;
     step1_consm = step1_time - start_time;
-    step2_consm = step2_time - step1_time;
+    step_gfs1_consm = step_gfs1_time - step1_time;
+    step_gfs2_consm = step_gfs2_time - step_gfs1_time;
+    step2_consm = step2_time - step_gfs2_time;
     step3_consm = step3_time - step2_time;
 
     //cout << step1_consm << "!" << step2_consm << "!" << step3_consm << endl;
-    write_file(step1_consm,step2_consm,step3_consm);
+    write_file(step1_consm,step_gfs1_consm,step_gfs2_consm,step2_consm,step3_consm);
 }
 
 

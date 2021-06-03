@@ -23,12 +23,12 @@ void open_file(char *file_char,string mode)
     string file_name = "/home/wangshi/test/ORB_SLAM_TEST/" + file_id+ "_"+ mode+".csv"; 
 	cout << file_name << endl;
     test_output.open(file_name,ios::out|ios::trunc);
-    test_output<< "step 1: Preprocess" << "," << "step 2: BA process"<<"," << "step 3: Postprocess"<<endl;
+    test_output<< "step 1: Preprocess" << "," << "step 2: Optimizer Insert  process"<<"," << "step 3: Good Feature Select"<< "," << "step4: Optimizer Optimization" << "," << "step5: Postprocess"<<endl;
 }
-void write_file(double step1_consm,double step2_consm,double step3_consm)
+void write_file(double step1_consm,double step_gfs1_consm,double step_gfs2_consm, double step2_consm,double step3_consm)
 {
     //cout << step1_consm << "," << step2_consm << "," << step3_consm << endl;
-    test_output << step1_consm << "," << step2_consm << "," << step3_consm << endl;
+    test_output << step1_consm << "," << step_gfs1_consm << "," << step_gfs2_consm << "," << step2_consm << "," << step3_consm << endl;
 }
 
 void close_file()

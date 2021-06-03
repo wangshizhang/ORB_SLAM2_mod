@@ -100,7 +100,9 @@ bool EdgeSE3ProjectXYZ::write(std::ostream& os) const {
 }
 
 
-void EdgeSE3ProjectXYZ::linearizeOplus() {
+void EdgeSE3ProjectXYZ::linearizeOplus() 
+{
+  cout  << "Caldulating Jacob now!!" << endl;
   VertexSE3Expmap * vj = static_cast<VertexSE3Expmap *>(_vertices[1]);
   SE3Quat T(vj->estimate());
   VertexSBAPointXYZ* vi = static_cast<VertexSBAPointXYZ*>(_vertices[0]);
@@ -245,14 +247,17 @@ bool EdgeSE3ProjectXYZOnlyPose::read(std::istream& is){
   for (int i=0; i<2; i++)
     for (int j=i; j<2; j++) {
       is >> information()(i,j);
-      if (i!=j)
-        information()(j,i)=information()(i,j);
-    }
-  return true;
-}
+  _jacobianOplusXi(0,0) = -fx*R(0,0)/z+fx*x*R(2,0)/z_2;
+  _jacobianOplusXi(0,1) = -fx*R(0,1)/z+fx*x*R(2,1)/z_2;
+  _jacobianOplusXi(0,2) = -fx*R(0,2)/z+fx*x*R(2,2)/z_2;
 
-bool EdgeSE3ProjectXYZOnlyPose::write(std::ostream& os) const {
+  _jacobianOplusXi(1,0) = -fy*R(1,0)/z+fy*y*R(2,0)/z_2;
+  _jacobianOplusXi(1,1) = -fy*R(1,1)/z+fy*y*R(2,1)/z_2;
+  _jacobianOplusXi(1,2) = -fy*R(1,2)/z+fy*y*R(2,2)/z_2;
 
+  _jacobianOplusXi(2,0) = _jacobianOplusXi(0,0)-bf*R(2,0)/z_2;
+  _jacobianOplusXi(2,1) = _jacobianOplusXi(0,1)-bf*R(2,1)/z_2;
+  _jacobianOplusXi(2,2) = _jacobianOplusXi(0,2)-bf*R(2,2)/z_2;
   for (int i=0; i<2; i++){
     os << measurement()[i] << " ";
   }

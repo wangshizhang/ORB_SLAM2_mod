@@ -95,6 +95,8 @@ namespace g2o {
       using BaseEdge<D,E>::resize;
       using BaseEdge<D,E>::computeError;
 
+      JacobianXiOplusType _jacobianOplusXi;
+      JacobianXjOplusType _jacobianOplusXj;
     protected:
       using BaseEdge<D,E>::_measurement;
       using BaseEdge<D,E>::_information;
@@ -105,8 +107,7 @@ namespace g2o {
       bool _hessianRowMajor;
       HessianBlockType _hessian;
       HessianBlockTransposedType _hessianTransposed;
-      JacobianXiOplusType _jacobianOplusXi;
-      JacobianXjOplusType _jacobianOplusXj;
+      
 
     public:
       EIGEN_MAKE_ALIGNED_OPERATOR_NEW

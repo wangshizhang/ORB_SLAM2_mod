@@ -215,12 +215,15 @@ namespace g2o{
     _activeVertices.reserve(vset.size());
     _activeEdges.clear();
     set<Edge*> auxEdgeSet; // temporary structure to avoid duplicates
-    for (HyperGraph::VertexSet::iterator it=vset.begin(); it!=vset.end(); ++it){
+
+    for (HyperGraph::VertexSet::iterator it=vset.begin(); it!=vset.end(); ++it)
+    {
       OptimizableGraph::Vertex* v= (OptimizableGraph::Vertex*) *it;
       const OptimizableGraph::EdgeSet& vEdges=v->edges();
       // count if there are edges in that level. If not remove from the pool
       int levelEdges=0;
-      for (OptimizableGraph::EdgeSet::const_iterator it=vEdges.begin(); it!=vEdges.end(); ++it){
+      for (OptimizableGraph::EdgeSet::const_iterator it=vEdges.begin(); it!=vEdges.end(); ++it)
+      {
         OptimizableGraph::Edge* e=reinterpret_cast<OptimizableGraph::Edge*>(*it);
         if (level < 0 || e->level() == level) {
 

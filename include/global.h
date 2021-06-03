@@ -12,5 +12,5 @@
 
 
 void open_file(char *,std::string);
-void write_file(double,double,double);
+void write_file(double,double,double,double,double);
 void close_file();

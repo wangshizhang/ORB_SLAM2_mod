@@ -122,6 +122,7 @@ void BaseBinaryEdge<D, E, VertexXiType, VertexXjType>::constructQuadraticForm()
 template <int D, typename E, typename VertexXiType, typename VertexXjType>
 void BaseBinaryEdge<D, E, VertexXiType, VertexXjType>::linearizeOplus(JacobianWorkspace& jacobianWorkspace)
 {
+  std::cout  << "Caldulating Jacob now!!" << std::endl;
   new (&_jacobianOplusXi) JacobianXiOplusType(jacobianWorkspace.workspaceForVertex(0), D, Di);
   new (&_jacobianOplusXj) JacobianXjOplusType(jacobianWorkspace.workspaceForVertex(1), D, Dj);
   linearizeOplus();
@@ -130,6 +131,7 @@ void BaseBinaryEdge<D, E, VertexXiType, VertexXjType>::linearizeOplus(JacobianWo
 template <int D, typename E, typename VertexXiType, typename VertexXjType>
 void BaseBinaryEdge<D, E, VertexXiType, VertexXjType>::linearizeOplus()
 {
+  std::cout  << "Caldulating Jacob now!!" << std::endl;
   VertexXiType* vi = static_cast<VertexXiType*>(_vertices[0]);
   VertexXjType* vj = static_cast<VertexXjType*>(_vertices[1]);
 
