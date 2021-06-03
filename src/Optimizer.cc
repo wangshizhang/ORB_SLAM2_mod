@@ -447,7 +447,7 @@ int Optimizer::PoseOptimization(Frame *pFrame)
     return nInitialCorrespondences-nBad;
 }
 
-void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap)
+void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap,bool GOOD_FEATURE_SELECT = false)
 {    
 // set start time
     clock_t  start_time,step1_time, step2_time,step3_time,step_gfs1_time,step_gfs2_time;
@@ -667,7 +667,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     step_gfs1_time = clock();
 
             //cout << gfs_mono << "!!!" << endl;
-    bool GOOD_FEATURE_SELECT = true;
+    //GOOD_FEATURE_SELECT = true;
     double gfs_ratio = 0.5; //ratio to select feature
     // 在这里加入Good Feature Select
     if(GOOD_FEATURE_SELECT)
