@@ -37,13 +37,34 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
 
 int main(int argc, char **argv)
 {
-    if(argc != 5)
+    if(argc != 6)
     {
         cerr << endl << "Usage: ./rgbd_tum path_to_vocabulary path_to_settings path_to_sequence path_to_association" << endl;
         return 1;
     }
 
-    open_file(argv[3],"RGBD_GF");
+    string dir_path = "/home/wangshi/test/ORB_SLAM_TEST/" ;
+    string file_id = string(argv[3]);
+    vector<string> res;
+    
+	Stringsplit(file_id,"/",res);
+	res.pop_back();
+	file_id = res.back();
+    string file_path = dir_path + file_id + "/";
+
+    char* gfs_str = argv[5];
+    bool  gfs = strcmp(gfs_str,"1") >= 0;
+    if(gfs)
+    {
+        cout << "Start Good Feature Select!!" << endl;
+        open_file(file_path,"RGBD_gfs");
+    }
+    else
+    {
+        //cout << argv[5] << endl;
+        open_file(file_path,"RGBD_nogfs");
+    }
+
     // Retrieve paths to images
     vector<string> vstrImageFilenamesRGB;
     vector<string> vstrImageFilenamesD;
@@ -65,7 +86,7 @@ int main(int argc, char **argv)
     }
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::RGBD,true);
+    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::RGBD,true,gfs);
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -139,8 +160,17 @@ int main(int argc, char **argv)
     cout << "mean tracking time: " << totaltime/nImages << endl;
 
     // Save camera trajectory
-    SLAM.SaveTrajectoryTUM("CameraTrajectory.txt");
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");   
+
+    if(gfs)
+    {
+        SLAM.SaveTrajectoryTUM(file_path + "CameraTrajectory_gfs.txt");
+        SLAM.SaveKeyFrameTrajectoryTUM(file_path + "KeyFrameTrajectory_gfs.txt");   
+    }
+    else
+    {
+        SLAM.SaveTrajectoryTUM(file_path + "CameraTrajectory_nogfs.txt");
+        SLAM.SaveKeyFrameTrajectoryTUM(file_path + "KeyFrameTrajectory_nogfs.txt");   
+    }
 
     return 0;
 }

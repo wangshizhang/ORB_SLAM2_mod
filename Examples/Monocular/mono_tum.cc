@@ -38,18 +38,36 @@ void LoadImages(const string &strFile, vector<string> &vstrImageFilenames,
 
 int main(int argc, char **argv)
 {
-    if(argc != 4)
+    if(argc != 5)
     {
         cerr << endl << "Usage: ./mono_tum path_to_vocabulary path_to_settings path_to_sequence" << endl;
         return 1;
     }
 
     //open output file
-    bool gfs = true;
+    //cout << string(argv[4]) << endl;
+
+    string dir_path = "/home/wangshi/test/ORB_SLAM_TEST/" ;
+    string file_id = string(argv[3]);
+    vector<string> res;
+
+	Stringsplit(file_id,"/",res);
+	res.pop_back();
+	file_id = res.back();
+    string file_path = dir_path + file_id + "/";
+
+    char* gfs_str = argv[4];
+    bool  gfs = strcmp(gfs_str,"1") >= 0;
     if(gfs)
-        open_file(argv[3],"Mono_gfs");
+    {
+        cout << "Start Good Feature Select!!" << endl;
+        open_file(file_path,"Mono_gfs");
+    }
     else
-        open_file(argv[3],"Mono_nogfs");
+    {
+        //cout << argv[5] << endl;
+        open_file(file_path,"Mono_nogfs");
+    }
 
     // Retrieve paths to images
     vector<string> vstrImageFilenames;
@@ -67,7 +85,6 @@ int main(int argc, char **argv)
     vector<float> vTimesTrack;
     vTimesTrack.resize(nImages);
 
-   
     cout << endl << "-------" << endl;
     cout << "Start processing sequence ..." << endl;
     cout << "Images in the sequence: " << nImages << endl << endl;
@@ -139,7 +156,7 @@ int main(int argc, char **argv)
     cout << "mean tracking time: " << totaltime/nImages << endl;
 
     // Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("KeyFrameTrajectory.txt");
+    SLAM.SaveKeyFrameTrajectoryTUM(file_path+"KeyFrameTrajectory.txt");
 
     return 0;
 }

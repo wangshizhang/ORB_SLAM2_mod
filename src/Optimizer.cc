@@ -759,38 +759,85 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
             logdet_queue.pop();
             vpEdgesMono.push_back(edge.first);
         }
-
-        // cout << "finish remove!" << endl;
-        // cout << "The removed Edge set size is" << vpEdgesMono.size() << endl; 
-
-        //Directly solve for Hc logdet
-
-        /*
-        // Firstly find the max logdet for every keyframe
-        for(auto kf_pt = lLocalKeyFrames.begin(), kf_pt_end=lLocalKeyFrames.end(); kf_pt != kf_pt_end; kf_pt++)
+        }
+        else // stereo mode, adjust the edges
         {
-            KeyFrame* kf = *kf_pt;
-            // do the loop and find the max logdet edge
-step_1mid2_time
+            // Initialize Jacob subset
+        vector <g2o::EdgeStereoSE3ProjectXYZ*> H_subset;
+        vector <g2o::EdgeStereoSE3ProjectXYZ*> H_oriset ;
 
-        
-        // Greedy selecting
-        while(H_subset.size() <= gfs_K || !H_oriset.empty()) // not reach the max subset or  original set is not NULL
+        //init edge to Hc map
+        // use pointer to save space
+        unordered_map  <g2o::EdgeStereoSE3ProjectXYZ*, Eigen::MatrixXd *> Hc_mat_map; 
+
+        struct my_cmp
         {
-            // find the max index j of original set
+            bool operator()(pair <g2o::EdgeStereoSE3ProjectXYZ*,double> a,pair <g2o::EdgeStereoSE3ProjectXYZ*,double> b)
+            {
+                return a.second >= b.second;
+            }
+        };
+        priority_queue < pair <g2o::EdgeStereoSE3ProjectXYZ*,double>,std::vector <pair <g2o::EdgeStereoSE3ProjectXYZ*,double>>,my_cmp> logdet_queue;
 
+        Matrix<double,3,3> cov_p = MatrixXd::Zero(3,3);
+        Matrix<double,3,3> cov_z = MatrixXd::Zero(3,3);
 
-            // renew the subset and original set
+        double cov_p_var = 0.001;
+        double cov_z_var = 1;
 
+        cov_p(0,0) = cov_p_var;cov_p(1,1) = cov_p_var;cov_p(2,2) = cov_p_var;
+        cov_z(0,0) = cov_z_var; cov_z(1,1) = cov_z_var;cov_z(2,2) = 0.1;
+
+        H_oriset.assign(vpEdgesStereo.begin(),vpEdgesStereo.end()); // Copy the original edge set for convinience and understanding
+
+        //unordered_set <int , vector <g2o::EdgeStereoSE3ProjectXYZ*>>  //设计一个和kf对应的所有point
+        //unordered_set <int, Hc_sum>;// the camera_id to Hc_sum now，用来做后续的incremental矩阵形式的计算
+
+        // Calculate the Jacob to Hc for every edge
+        // save to Hc_mat_set
+        for(auto edge_pt = H_oriset.begin(); edge_pt != H_oriset.end(); edge_pt ++)
+        {
+            g2o::EdgeStereoSE3ProjectXYZ* edge = *edge_pt; //提取出这条edge的指针
+            Eigen :: Matrix<double,3,3> jacob_p;
+            Matrix<double,3,6> jacob_x;
+            // calculate Jacob matrix for map point and camera position
+            linearizeOplus_apx_stereo(edge,jacob_p,jacob_x);
+
+            //calculate the Hc for this edge
+            Matrix <double,3,3> cov_r = jacob_p * cov_p * jacob_p.transpose() + cov_z;
+            LLT<MatrixXd> chol_cov_r(cov_r);
+            MatrixXd w_r = chol_cov_r.matrixL();
+            MatrixXd H_c_now = w_r.inverse() * jacob_x;
+
+            // save to the map for further use
+            Hc_mat_map.emplace(edge,&H_c_now);
+
+            MatrixXd Hc_mul = H_c_now.transpose() * H_c_now;
+            logdet_queue.emplace(edge,logdet(Hc_mul));
+
+            // cout << Hc_mul << endl;
+            // cout << logdet(Hc_mul) << endl;
+        }
+        int queue_half_size = int(logdet_queue.size()*gfs_ratio);
+
+        vpEdgesStereo.clear();// here may need modify
+        for(int i = 0;i < queue_half_size;i ++ )
+        {
+            //cout << i << endl;
+            pair <g2o::EdgeStereoSE3ProjectXYZ*,double> edge = logdet_queue.top();
+            logdet_queue.pop();
+            optimizer.removeEdge(edge.first);
         }
 
-        // Remove remained
-        for(auto edge_pt = H_oriset.begin();edge_pt != H_oriset.end();edge_pt ++)
+        while(!logdet_queue.empty())
         {
-            optimizer.removeEdge(*edge_pt);
+            //cout << i << endl;
+            pair <g2o::EdgeStereoSE3ProjectXYZ*,double> edge = logdet_queue.top();
+            logdet_queue.pop();
+            vpEdgesStereo.push_back(edge.first);
         }
-        */
         }
+
     }
     
     step_gfs2_time = clock();

@@ -1,26 +1,21 @@
 #include"global.h"
-
+#include <dirent.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 using namespace std;
 
-void Stringsplit(const string , const string , vector<string>&);
-
 ofstream test_output;
-void open_file(char *file_char,string mode)
+void open_file(string dir_path,string mode)
 {
     cout << "Tik tok start saving!"<<endl;
 
-    string file_id = string(file_char);
+	if(opendir(&dir_path[0]) == NULL)
+	{
+		cout << "Making new directory for this dataset !" << endl;
+		mkdir(&dir_path[0],0777);
+	}
 
-    vector<string> res;
-    
-	Stringsplit(file_id,"/",res);
-
-	res.pop_back();
-	file_id = res.back();
-
-    cout << file_id << endl;
-
-    string file_name = "/home/wangshi/test/ORB_SLAM_TEST/" + file_id+ "_"+ mode+".csv"; 
+    string file_name = dir_path+ mode+"_time.csv"; 
 	cout << file_name << endl;
     test_output.open(file_name,ios::out|ios::trunc);
     test_output<< "step 1: Preprocess" << "," << "step 2: Optimizer Insert  process"<<"," << "step 3: Good Feature Select"<< "," << "step 4: Optimizer Optimization" << "," << "step 5: Postprocess"<<endl;
