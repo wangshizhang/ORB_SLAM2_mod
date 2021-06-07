@@ -687,6 +687,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
         {
             bool operator()(pair <g2o::EdgeSE3ProjectXYZ*,double> a,pair <g2o::EdgeSE3ProjectXYZ*,double> b)
             {
+                // return a.second <= b.second;
                 return a.second >= b.second;
             }
         };

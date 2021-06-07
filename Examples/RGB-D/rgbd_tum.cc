@@ -37,7 +37,7 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
 
 int main(int argc, char **argv)
 {
-    if(argc != 6)
+    if(argc != 7)
     {
         cerr << endl << "Usage: ./rgbd_tum path_to_vocabulary path_to_settings path_to_sequence path_to_association" << endl;
         return 1;
@@ -53,17 +53,30 @@ int main(int argc, char **argv)
     string file_path = dir_path + file_id + "/";
 
     char* gfs_str = argv[5];
-    bool  gfs = strcmp(gfs_str,"1") >= 0;
+    bool  gfs = strcmp(gfs_str+4,"1") >= 0;
+
+    string count_index = string(&(string(argv[6])[6]));
+
     if(gfs)
     {
         cout << "Start Good Feature Select!!" << endl;
-        open_file(file_path,"RGBD_gfs");
+        open_file(file_path,"RGBD_gfs_"+count_index);
     }
     else
     {
         //cout << argv[5] << endl;
-        open_file(file_path,"RGBD_nogfs");
+        open_file(file_path,"RGBD_nogfs_"+count_index);
     }
+    // if(gfs)
+    // {
+    //     cout << "Start Good Feature Select!!" << endl;
+    //     open_file(file_path,"RGBD_badgfs_"+count_index);
+    // }
+    // else
+    // {
+    //     //cout << argv[5] << endl;
+    //     open_file(file_path,"RGBD_nogfs_"+count_index);
+    // }
 
     // Retrieve paths to images
     vector<string> vstrImageFilenamesRGB;
@@ -161,16 +174,27 @@ int main(int argc, char **argv)
 
     // Save camera trajectory
 
+
     if(gfs)
     {
-        SLAM.SaveTrajectoryTUM(file_path + "CameraTrajectory_gfs.txt");
-        SLAM.SaveKeyFrameTrajectoryTUM(file_path + "KeyFrameTrajectory_gfs.txt");   
+        SLAM.SaveTrajectoryTUM(file_path + "CameraTrajectory_gfs_"+count_index+".txt");
+        SLAM.SaveKeyFrameTrajectoryTUM(file_path + "KeyFrameTrajectory_gfs_"+count_index+".txt");   
     }
     else
     {
-        SLAM.SaveTrajectoryTUM(file_path + "CameraTrajectory_nogfs.txt");
-        SLAM.SaveKeyFrameTrajectoryTUM(file_path + "KeyFrameTrajectory_nogfs.txt");   
+        SLAM.SaveTrajectoryTUM(file_path + "CameraTrajectory_nogfs_"+count_index+".txt");
+        SLAM.SaveKeyFrameTrajectoryTUM(file_path + "KeyFrameTrajectory_nogfs_"+count_index+".txt");   
     }
+    // if(gfs)
+    // {
+    //     SLAM.SaveTrajectoryTUM(file_path + "CameraTrajectory_badgfs_"+count_index+".txt");
+    //     SLAM.SaveKeyFrameTrajectoryTUM(file_path + "KeyFrameTrajectory_badgfs_"+count_index+".txt");   
+    // }
+    // else
+    // {
+    //     SLAM.SaveTrajectoryTUM(file_path + "CameraTrajectory_nogfs_"+count_index+".txt");
+    //     SLAM.SaveKeyFrameTrajectoryTUM(file_path + "KeyFrameTrajectory_nogfs_"+count_index+".txt");   
+    // }
 
     return 0;
 }
