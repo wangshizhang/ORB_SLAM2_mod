@@ -487,6 +487,60 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
         }
     }
 
+    // MIH here~
+    // 将在这里进行Points的筛选，即对已经加入localmap的 points做相似度匹配。
+    // 由于这是满足covisible的，做完筛选就可以了
+    
+    if(MUL_INDEX_HASH)
+    {
+        // 看起来这个不分mono和stereo
+
+        int multi_count = 32;//set the seperate count of MIH
+        vector<MapPoint*> sub_lLocalMapPoints;
+        unordered_map <cv::Mat ,  vector <MapPoint*>> test_MIH;
+        vector <unordered_map <cv::Mat ,  vector <MapPoint*>>> MIH(multi_count, test_MIH);
+
+        // Add LocalMapPoints to MIH
+        for(list<MapPoint*>::iterator lit=lLocalMapPoints.begin(), lend=lLocalMapPoints.end(); lit!=lend; lit++)
+        {
+            MapPoint* point_now = *lit;
+            cv::Mat Descriptor_now = point_now->GetDescriptor();
+            
+            // add to MIH with different part of descriptor
+            for(int i = 0;i < multi_count;i ++)
+            {
+
+            }
+        }
+
+        // Find subset of LocalMapPoints with points of KeyFrame now
+        set<MapPoint*> points_now = pKF->GetMapPoints();
+        
+        for(auto point_now_pt = points_now.begin();point_now_pt != points_now.end();point_now_pt ++)
+        {
+            auto point_now = *point_now_pt;
+            auto Descriptor_now = point_now->GetDescriptor();
+
+            // get the vector of MapPoint pointers and sum them up
+            for(int i = 0;i < multi_count;i ++)
+            {
+                // find the cooperated in MIH
+
+                // sum them up to subset
+                vector <MapPoint*> subset_new;
+
+                sub_lLocalMapPoints.insert(sub_lLocalMapPoints.end(),subset_new.begin(),subset_new.end());
+
+            }
+        }
+
+        // Modify LocalMapPoints for further optimization
+        lLocalMapPoints.clear();
+        lLocalMapPoints.assign(sub_lLocalMapPoints.begin(),sub_lLocalMapPoints.end());
+
+    }
+    
+
     // Fixed Keyframes. Keyframes that see Local MapPoints but that are not Local Keyframes
     list<KeyFrame*> lFixedCameras;
     for(list<MapPoint*>::iterator lit=lLocalMapPoints.begin(), lend=lLocalMapPoints.end(); lit!=lend; lit++)
