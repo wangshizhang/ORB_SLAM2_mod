@@ -36,8 +36,8 @@ namespace ORB_SLAM2
 {
 
 System::System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor,
-               const bool bUseViewer,bool GOOD_FEATURE_SELECT):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false),mbActivateLocalizationMode(false),
-        mbDeactivateLocalizationMode(false),GOOD_FEATURE_SELECT(GOOD_FEATURE_SELECT)
+               const bool bUseViewer,bool GOOD_FEATURE_SELECT,int MUL_INDEX_HASH_COUNT):mSensor(sensor), mpViewer(static_cast<Viewer*>(NULL)), mbReset(false),mbActivateLocalizationMode(false),
+        mbDeactivateLocalizationMode(false),GOOD_FEATURE_SELECT(GOOD_FEATURE_SELECT),MUL_INDEX_HASH_COUNT(MUL_INDEX_HASH_COUNT)
 {
     // Output welcome message
     cout << endl <<
@@ -93,7 +93,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const eS
                              mpMap, mpKeyFrameDatabase, strSettingsFile, mSensor);
 
     //Initialize the Local Mapping thread and launch
-    mpLocalMapper = new LocalMapping(mpMap, mSensor==MONOCULAR,GOOD_FEATURE_SELECT = GOOD_FEATURE_SELECT);
+    mpLocalMapper = new LocalMapping(mpMap, mSensor==MONOCULAR,GOOD_FEATURE_SELECT = GOOD_FEATURE_SELECT,MUL_INDEX_HASH_COUNT=MUL_INDEX_HASH_COUNT);
     mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run,mpLocalMapper);
 
     //Initialize the Loop Closing thread and launch

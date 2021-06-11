@@ -5,6 +5,7 @@
 using namespace std;
 
 ofstream test_output;
+ofstream  mih_output;
 void open_file(string dir_path,string mode)
 {
     cout << "Tik tok start saving!"<<endl;
@@ -18,18 +19,38 @@ void open_file(string dir_path,string mode)
     string file_name = dir_path+ mode+"_time.csv"; 
 	cout << file_name << endl;
     test_output.open(file_name,ios::out|ios::trunc);
-    test_output<< "step 1: Preprocess" << "," << "step 2: Optimizer Insert  process"<<"," << "step 3: Good Feature Select"<< "," << "step 4: Optimizer Optimization" << "," << "step 5: Postprocess"<<endl;
+    test_output<< "step 1: Preprocess" << ","<< "step 2: Multi-index Hash Selecting" << ","  << "step 3: Optimizer Insert  process"<<"," << "step 4: Good Feature Select"<< "," << "step 5: Optimizer Optimization" << "," << "step 6: Postprocess"<<endl;
 }
-void write_file(double step1_consm,double step_gfs1_consm,double step_gfs2_consm, double step2_consm,double step3_consm)
+void write_file(double step1_consm,double step2_consm,double step3_consm, double step4_consm,double step5_consm,double step6_consm)
 {
     //cout << step1_consm << "," << step2_consm << "," << step3_consm << endl;
-    test_output << step1_consm << "," << step_gfs1_consm << "," << step_gfs2_consm << "," << step2_consm << "," << step3_consm << endl;
+    test_output << step1_consm << "," << step2_consm << "," << step3_consm << "," << step4_consm << "," << step5_consm << "," << step6_consm << endl;
 }
 
 void close_file()
 {
     cout << "Tik-Tok time saved!" <<endl;
     test_output.close();
+}
+
+void open_file_mih(string dir_path,string file_name)
+{
+    cout << "MIH start saving!"<<endl;
+
+	if(opendir(&dir_path[0]) == NULL)
+	{
+		cout << "Making new directory for this dataset !" << endl;
+    	mih_output<< "Feature Covisibility"<< "," << "MIH Feature Selected"<<endl;
+	}
+void write_file_mih(double  cov_count,double mih_count)
+{
+    mih_output << cov_count <<"," << mih_count << endl;
+}
+
+void close_file_mih()
+{
+    cout << "MIH points data saved!" <<endl;
+    mih_output.close();
 }
 
 void Stringsplit(const string str, const string splits, vector<string>& res)

@@ -37,7 +37,7 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
 
 int main(int argc, char **argv)
 {
-    if(argc != 7)
+    if(argc != 8)
     {
         cerr << endl << "Usage: ./rgbd_tum path_to_vocabulary path_to_settings path_to_sequence path_to_association" << endl;
         return 1;
@@ -55,18 +55,37 @@ int main(int argc, char **argv)
     char* gfs_str = argv[5];
     bool  gfs = strcmp(gfs_str+4,"1") >= 0;
 
-    string count_index = string(&(string(argv[6])[6]));
+    string MUL_INDEX_str = string(argv[6]);
+    int MUL_INDEX_HASH_COUNT = stoi(MUL_INDEX_str.substr(4));
+    cout << MUL_INDEX_HASH_COUNT << "!" << endl;
+    string count_index = string(&(string(argv[7])[6]));
 
+    string file_name = "RGBD_";
+    
     if(gfs)
     {
         cout << "Start Good Feature Select!!" << endl;
-        open_file(file_path,"RGBD_gfs_"+count_index);
+        file_name += "gfs_";
     }
     else
     {
-        //cout << argv[5] << endl;
-        open_file(file_path,"RGBD_nogfs_"+count_index);
+        file_name += "nogfs_";
     }
+
+    if(MUL_INDEX_HASH_COUNT != 1)
+    {
+        cout << "Start Multi-index Hash Selecting!" << endl;
+        file_name += "mih"+ to_string(MUL_INDEX_HASH_COUNT) +"_" ;
+        open_file_mih(file_path,file_name+count_index);
+    }
+    else
+    {
+        file_name += "nomih_";
+    }
+
+    file_name += count_index;
+    open_file(file_path,file_name);
+
     // if(gfs)
     // {
     //     cout << "Start Good Feature Select!!" << endl;
@@ -99,7 +118,7 @@ int main(int argc, char **argv)
     }
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::RGBD,true,gfs);
+    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::RGBD,true,gfs,MUL_INDEX_HASH_COUNT);
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;
@@ -160,6 +179,7 @@ int main(int argc, char **argv)
 
     //close logging
     close_file();
+    close_file_mih();
     
     // Tracking time statistics
     sort(vTimesTrack.begin(),vTimesTrack.end());
@@ -175,16 +195,9 @@ int main(int argc, char **argv)
     // Save camera trajectory
 
 
-    if(gfs)
-    {
-        SLAM.SaveTrajectoryTUM(file_path + "CameraTrajectory_gfs_"+count_index+".txt");
-        SLAM.SaveKeyFrameTrajectoryTUM(file_path + "KeyFrameTrajectory_gfs_"+count_index+".txt");   
-    }
-    else
-    {
-        SLAM.SaveTrajectoryTUM(file_path + "CameraTrajectory_nogfs_"+count_index+".txt");
-        SLAM.SaveKeyFrameTrajectoryTUM(file_path + "KeyFrameTrajectory_nogfs_"+count_index+".txt");   
-    }
+    SLAM.SaveTrajectoryTUM(file_path + "CameraTrajectory_"+file_name+".txt");
+    SLAM.SaveKeyFrameTrajectoryTUM(file_path + "KeyFrameTrajectory_"+file_name+".txt");
+
     // if(gfs)
     // {
     //     SLAM.SaveTrajectoryTUM(file_path + "CameraTrajectory_badgfs_"+count_index+".txt");

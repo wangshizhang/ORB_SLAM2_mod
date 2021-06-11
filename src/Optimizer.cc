@@ -33,13 +33,15 @@
 #include<Eigen/StdVector>
 
 #include "Converter.h"
-#include "Jacob_cal_apx.h"
 #include <unordered_map>
 #include <queue>
 #include<mutex>
 #include <unistd.h>
 
+#include "Jacob_cal_apx.h"
 #include "global.h"
+#include "MIH_helper.h"
+
 using namespace Eigen;
 using namespace std;
 
@@ -447,10 +449,10 @@ int Optimizer::PoseOptimization(Frame *pFrame)
     return nInitialCorrespondences-nBad;
 }
 
-void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap,bool GOOD_FEATURE_SELECT = false)
+void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap,bool GOOD_FEATURE_SELECT = false,int MUL_INDEX_HASH_COUNT = 1)
 {    
 // set start time
-    clock_t  start_time,step1_time, step2_time,step3_time,step_gfs1_time,step_gfs2_time;
+    clock_t  start_time,step1_time, step2_time,step3_time,step_gfs1_time,step_gfs2_time,step_mih1_time,step_mih2_time;
 
     start_time = clock();
     // Local KeyFrames: First Breath Search from Current Keyframe
@@ -490,55 +492,111 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     // MIH here~
     // 将在这里进行Points的筛选，即对已经加入localmap的 points做相似度匹配。
     // 由于这是满足covisible的，做完筛选就可以了
-    
-    if(MUL_INDEX_HASH)
+    step_mih1_time = clock();
+
+    if(MUL_INDEX_HASH_COUNT != 1)
     {
         // 看起来这个不分mono和stereo
 
-        int multi_count = 32;//set the seperate count of MIH
+        int multi_count = MUL_INDEX_HASH_COUNT;//set the seperate count of MIH. Can be [4,8,16,32], while the hash key to be [64,32,16,8] bits
         vector<MapPoint*> sub_lLocalMapPoints;
-        unordered_map <cv::Mat ,  vector <MapPoint*>> test_MIH;
-        vector <unordered_map <cv::Mat ,  vector <MapPoint*>>> MIH(multi_count, test_MIH);
+        // unordered_map <cv::Mat ,  vector <MapPoint*>> test_MIH;
+        // vector <unordered_map <cv::Mat ,  vector <MapPoint*>>> MIH(multi_count, test_MIH);
+
+        vector <unordered_map <int64_t ,  vector <MapPoint*>>> MIH;
+        for(int i = 0;i < multi_count;i ++)
+        {
+            unordered_map <int64_t ,  vector <MapPoint*>> test_MIH;
+            MIH.push_back(test_MIH);
+        }
 
         // Add LocalMapPoints to MIH
         for(list<MapPoint*>::iterator lit=lLocalMapPoints.begin(), lend=lLocalMapPoints.end(); lit!=lend; lit++)
         {
             MapPoint* point_now = *lit;
             cv::Mat Descriptor_now = point_now->GetDescriptor();
+
+            // Calculate the  block size of original descriptor
+            // Default :   ORB descriptor           block_size
+            //                              256 bit                      256/4 = 64 bit
+            int32_t  des_bitsize = Descriptor_now.cols;
+            int32_t  block_size = des_bitsize / multi_count;
             
+            //cout << Descriptor_now << "!!!!" << endl;
             // add to MIH with different part of descriptor
             for(int i = 0;i < multi_count;i ++)
             {
+                int32_t  index_start =  i  * block_size;
+                int32_t  index_end  = (i + 1) * block_size; 
 
+                auto key_mat = Descriptor_now.colRange(index_start,index_end);
+                // Transfer the mat to hash key
+
+                int64_t key_int = des_mat2key(key_mat);
+
+                // 这里看看map性质，如果key不存在是怎么做的，先试试
+                if(MIH[i][key_int].size() <  10)
+                    MIH[i][key_int].push_back(point_now);
+                else
+                {
+                    MIH[i][key_int].erase(MIH[i][key_int].begin());
+                    MIH[i][key_int].push_back(point_now);
+                }
             }
         }
 
+        // test the adding
+        /*
+        for(int i = 0;i < multi_count;i ++)
+        {
+            cout <<  i <<"!!" << MIH[i].size()<< endl;
+            for(auto map_pt = MIH[i].begin();map_pt != MIH[i].end();map_pt ++)
+            {
+                //cout  << map_pt->first  << ":  " << map_pt->second .size() << endl;
+                ;
+            }
+        }
+        */
+
         // Find subset of LocalMapPoints with points of KeyFrame now
-        set<MapPoint*> points_now = pKF->GetMapPoints();
-        
+        set<MapPoint *> points_now = pKF->GetMapPoints();
+        set<MapPoint *> points_MIH_select;
+
         for(auto point_now_pt = points_now.begin();point_now_pt != points_now.end();point_now_pt ++)
         {
             auto point_now = *point_now_pt;
             auto Descriptor_now = point_now->GetDescriptor();
 
+            int32_t  des_bitsize = Descriptor_now.cols;
+            int32_t  block_size = des_bitsize / multi_count;
+
             // get the vector of MapPoint pointers and sum them up
             for(int i = 0;i < multi_count;i ++)
             {
                 // find the cooperated in MIH
+                int32_t  index_start =  i  * block_size;
+                int32_t  index_end  = (i + 1) * block_size; 
+                auto key_mat = Descriptor_now.colRange(index_start,index_end);
+
+                int64_t key_int = des_mat2key(key_mat);
 
                 // sum them up to subset
-                vector <MapPoint*> subset_new;
+                points_MIH_select.insert(MIH[i][key_int].begin(),MIH[i][key_int].end());
 
-                sub_lLocalMapPoints.insert(sub_lLocalMapPoints.end(),subset_new.begin(),subset_new.end());
+                //sub_lLocalMapPoints.insert(sub_lLocalMapPoints.end(),subset_new.begin(),subset_new.end());
 
             }
         }
-
-        // Modify LocalMapPoints for further optimization
+        write_file_mih(lLocalMapPoints.size(),points_MIH_select.size());
+        
+        // remove the original map points
         lLocalMapPoints.clear();
-        lLocalMapPoints.assign(sub_lLocalMapPoints.begin(),sub_lLocalMapPoints.end());
-
+        lLocalMapPoints.assign(points_MIH_select.begin(),points_MIH_select.end());
+         //cout << "Original Local Map Points count" << lLocalMapPoints.size() << endl;
+         //cout << "MIH selected Local Map Points count" << points_MIH_select.size() <<endl;
+         
     }
+        step_mih2_time = clock();
     
 
     // Fixed Keyframes. Keyframes that see Local MapPoints but that are not Local Keyframes
@@ -559,7 +617,6 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
         }
     }
 
-    step1_time = clock();
     // Setup optimizer
     g2o::SparseOptimizer optimizer;
     g2o::BlockSolver_6_3::LinearSolverType * linearSolver;
@@ -1022,15 +1079,16 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     }
     step3_time = clock();
 
-    double step1_consm,step_gfs1_consm,step_gfs2_consm,step2_consm,step3_consm;
-    step1_consm = step1_time - start_time;
-    step_gfs1_consm = step_gfs1_time - step1_time;
-    step_gfs2_consm = step_gfs2_time - step_gfs1_time;
-    step2_consm = step2_time - step_gfs2_time;
-    step3_consm = step3_time - step2_time;
+    double step1_consm, step2_consm, step3_consm,  step4_consm, step5_consm, step6_consm;
+    step1_consm = step_mih1_time - start_time;
+    step2_consm = step_mih2_time - step_mih1_time;
+    step3_consm = step_gfs1_time - step_mih2_time;
+    step4_consm = step_gfs2_time - step_gfs1_time;
+    step5_consm = step2_time - step_gfs2_time;
+    step6_consm = step3_time - step2_time;
 
     //cout << step1_consm << "!" << step2_consm << "!" << step3_consm << endl;
-    write_file(step1_consm,step_gfs1_consm,step_gfs2_consm,step2_consm,step3_consm);
+    write_file(step1_consm, step2_consm, step3_consm,  step4_consm, step5_consm, step6_consm);
 }
 
 

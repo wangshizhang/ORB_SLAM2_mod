@@ -40,8 +40,11 @@ class Map;
 class LocalMapping
 {
 public:
-    LocalMapping(Map* pMap, const float bMonocular,bool GOOD_FEATURE_SELECT);
+    LocalMapping(Map* pMap, const float bMonocular,bool GOOD_FEATURE_SELECT,int MUL_INDEX_HASH_COUNT);
+
     bool GOOD_FEATURE_SELECT;
+    int MUL_INDEX_HASH_COUNT;
+    
     void SetLoopCloser(LoopClosing* pLoopCloser);
 
     void SetTracker(Tracking* pTracker);
