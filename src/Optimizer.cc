@@ -777,8 +777,6 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
 
     step_gfs1_time = clock();
 
-            //cout << gfs_mono << "!!!" << endl;
-    //GOOD_FEATURE_SELECT = true;
     double gfs_ratio = 0.5; //ratio to select feature
     // 在这里加入Good Feature Select
     if(GOOD_FEATURE_SELECT)
@@ -815,9 +813,6 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
 
         H_oriset.assign(vpEdgesMono.begin(),vpEdgesMono.end()); // Copy the original edge set for convinience and understanding
 
-        //unordered_set <int , vector <g2o::EdgeStereoSE3ProjectXYZ*>>  //设计一个和kf对应的所有point
-        //unordered_set <int, Hc_sum>;// the camera_id to Hc_sum now，用来做后续的incremental矩阵形式的计算
-
         // Calculate the Jacob to Hc for every edge
         // save to Hc_mat_set
         for(auto edge_pt = H_oriset.begin(); edge_pt != H_oriset.end(); edge_pt ++)
@@ -825,6 +820,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
             g2o::EdgeSE3ProjectXYZ* edge = *edge_pt; //提取出这条edge的指针
             Eigen :: Matrix<double,2,3> jacob_p;
             Matrix<double,2,6> jacob_x;
+            
             // calculate Jacob matrix for map point and camera position
             linearizeOplus_apx_mono(edge,jacob_p,jacob_x);
 
@@ -901,9 +897,6 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
         cov_z(0,0) = cov_z_var; cov_z(1,1) = cov_z_var;cov_z(2,2) = 0.1;
 
         H_oriset.assign(vpEdgesStereo.begin(),vpEdgesStereo.end()); // Copy the original edge set for convinience and understanding
-
-        //unordered_set <int , vector <g2o::EdgeStereoSE3ProjectXYZ*>>  //设计一个和kf对应的所有point
-        //unordered_set <int, Hc_sum>;// the camera_id to Hc_sum now，用来做后续的incremental矩阵形式的计算
 
         // Calculate the Jacob to Hc for every edge
         // save to Hc_mat_set
