@@ -71,12 +71,11 @@ code github : https://github.com/wangshizhang/ORB_SLAM2_mod
 
 ![image](test_pics/rgbd_dataset_freiburg1_360_time_res_ratio_gfs.jpg)
 
-![rgbd_dataset_freiburg1_desk2_time_res_ratio_gfs.jpg](attachment:rgbd_dataset_freiburg1_desk2_time_res_ratio_gfs.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_desk2_time_res_ratio_gfs.jpg)
 
-![rgbd_dataset_freiburg1_desk_time_res_ratio_gfs.jpg](attachment:rgbd_dataset_freiburg1_desk_time_res_ratio_gfs.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_desk_time_res_ratio_gfs.jpg)
 
-![rgbd_dataset_freiburg1_plant_time_res_ratio_gfs.jpg](attachment:rgbd_dataset_freiburg1_plant_time_res_ratio_gfs.jpg)
-
+![image](test_pics/rgbd_dataset_freiburg1_plant_time_res_ratio_gfs.jpg)
 #### Error comparison
 但我们不止希望改进是单纯的提速，否则我们只需要随意减小问题规模就可以。因此我们需要对精度进行衡量。
 
@@ -84,16 +83,15 @@ code github : https://github.com/wangshizhang/ORB_SLAM2_mod
 
 可以看出，Good Feature Select虽然牺牲了一定的精度，但并没有获得预期的速度上的提升。
 
-![rgbd_dataset_freiburg1_360_error_std_res_gfs.jpg](attachment:rgbd_dataset_freiburg1_360_error_std_res_gfs.jpg)
 
-![rgbd_dataset_freiburg1_desk2_error_std_res_gfs.jpg](attachment:rgbd_dataset_freiburg1_desk2_error_std_res_gfs.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_360_error_std_res_gfs.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_desk2_error_std_res_gfs.jpg)
 
-![rgbd_dataset_freiburg1_desk_error_std_res_gfs.jpg](attachment:rgbd_dataset_freiburg1_desk_error_std_res_gfs.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_desk_error_std_res_gfs.jpg)
 
-![rgbd_dataset_freiburg1_plant_error_std_res_gfs.jpg](attachment:rgbd_dataset_freiburg1_plant_error_std_res_gfs.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_plant_error_std_res_gfs.jpg)
 
-![rgbd_dataset_freiburg1_room_error_std_res_gfs.jpg](attachment:rgbd_dataset_freiburg1_room_error_std_res_gfs.jpg)
-
+![image](test_pics/rgbd_dataset_freiburg1_room_error_std_res_gfs.jpg)
 ### Multi-index Hash
 
 这里我们将对比同一个dataset上，将256位orb特征分为不同数量的block，所运行的结果进行对比。
@@ -102,39 +100,42 @@ code github : https://github.com/wangshizhang/ORB_SLAM2_mod
 
 可以看出，分为4段和8段对于特征点的筛选较强，显著加速了localBA的过程。而分为16段和32段，由于匹配时间的上升，不仅没有加速，反而降低了速度。
 
-![rgbd_dataset_freiburg1_360_time_res_ratio_MIH.jpg](attachment:rgbd_dataset_freiburg1_360_time_res_ratio_MIH.jpg)
 
-![rgbd_dataset_freiburg1_desk2_time_res_ratio_MIH.jpg](attachment:rgbd_dataset_freiburg1_desk2_time_res_ratio_MIH.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_360_time_res_ratio_MIH.jpg)
 
-![rgbd_dataset_freiburg1_desk_time_res_ratio_MIH.jpg](attachment:rgbd_dataset_freiburg1_desk_time_res_ratio_MIH.jpg)
 
-![rgbd_dataset_freiburg1_plant_time_res_ratio_MIH.jpg](attachment:rgbd_dataset_freiburg1_plant_time_res_ratio_MIH.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_desk2_time_res_ratio_MIH.jpg)
+
+![image](test_pics/rgbd_dataset_freiburg1_desk_time_res_ratio_MIH.jpg)
+
+![image](test_pics/rgbd_dataset_freiburg1_plant_time_res_ratio_MIH.jpg)
 
 #### Points Selecting Comparison
 
 这里我对localBA过程中，Map Points的数量做了对比。可以看出，分为4段和8段在特征点选取数量上是接近的，这也解释了为何上面的run time他们也有相似的表现。而分为16段和32段，map points数量和原始的就比较接近了，这也是为什么速度没有得到提升的原因，因为问题规模没有得到有效的减小。
 
-![rgbd_dataset_freiburg1_360%20Feature%20Selection.jpg](attachment:rgbd_dataset_freiburg1_360%20Feature%20Selection.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_360%20Feature%20Selection.jpg)
 
-![rgbd_dataset_freiburg1_desk2%20Feature%20Selection.jpg](attachment:rgbd_dataset_freiburg1_desk2%20Feature%20Selection.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_desk2%20Feature%20Selection.jpg)
 
-![rgbd_dataset_freiburg1_desk%20Feature%20Selection.jpg](attachment:rgbd_dataset_freiburg1_desk%20Feature%20Selection.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_desk%20Feature%20Selection.jpg)
 
-![rgbd_dataset_freiburg1_plant%20Feature%20Selection.jpg](attachment:rgbd_dataset_freiburg1_plant%20Feature%20Selection.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_plant%20Feature%20Selection.jpg)
 
 #### Error comparison
 
 同样的，我们需要对精度进行测试。从精度结果上看，虽然分为4段和8段的运行速度是相近的，但是在精度上，8段的MIH可以比4段保持更好的误差精度，这提示我们，虽然它们筛选出的特征点数量相似，但质量是不一样的，从而在多个dataset上都呈现着牺牲一定的精度但获取了更好的速度的结果。16段和32段，正如我们所预想的，由于没有对特征点进行有效的减小，精度和原始ORB-SLAM2并没有明显的区分。
 
-![rgbd_dataset_freiburg1_360_error_std_res_MIH-2.jpg](attachment:rgbd_dataset_freiburg1_360_error_std_res_MIH-2.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_360_error_std_res_MIH.jpg)
 
-![rgbd_dataset_freiburg1_desk2_error_std_res_MIH.jpg](attachment:rgbd_dataset_freiburg1_desk2_error_std_res_MIH.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_desk2_error_std_res_MIH.jpg)
 
-![rgbd_dataset_freiburg1_desk_error_std_res_MIH.jpg](attachment:rgbd_dataset_freiburg1_desk_error_std_res_MIH.jpg)
 
-![rgbd_dataset_freiburg1_plant_error_std_res_MIH.jpg](attachment:rgbd_dataset_freiburg1_plant_error_std_res_MIH.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_desk_error_std_res_MIH.jpg)
 
-![rgbd_dataset_freiburg1_room_error_std_res_MIH.jpg](attachment:rgbd_dataset_freiburg1_room_error_std_res_MIH.jpg)
+![image](test_pics/rgbd_dataset_freiburg1_plant_error_std_res_MIH.jpg)
+
+![image](test_pics/rgbd_dataset_freiburg1_room_error_std_res_MIH.jpg)
 
 ## Prospection 
 
