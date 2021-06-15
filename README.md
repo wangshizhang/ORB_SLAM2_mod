@@ -69,7 +69,7 @@ code github : https://github.com/wangshizhang/ORB_SLAM2_mod
 
 这里展示的是采用了Good Feature Select和原始ORB-SLAM2在不同dataset上各阶段消耗时间的比值。可以看出，Good Feature Select对于整个过程的加速效果并不是十分显著（即比值小于1），在一些dataset上甚至更加耗时。并没有获得预期的加速效果。
 
-![rgbd_dataset_freiburg1_360_time_res_ratio_gfs.jpg](attachment:rgbd_dataset_freiburg1_360_time_res_ratio_gfs.jpg)
+![/test_pics/rgbd_dataset_freiburg1_360_time_res_ratio_gfs.jpg](attachment:rgbd_dataset_freiburg1_360_time_res_ratio_gfs.jpg)
 
 ![rgbd_dataset_freiburg1_desk2_time_res_ratio_gfs.jpg](attachment:rgbd_dataset_freiburg1_desk2_time_res_ratio_gfs.jpg)
 
