@@ -37,7 +37,7 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
 
 int main(int argc, char **argv)
 {
-    if(argc != 8)
+    if(argc != 9)
     {
         cerr << endl << "Usage: ./rgbd_tum path_to_vocabulary path_to_settings path_to_sequence path_to_association" << endl;
         return 1;
@@ -57,8 +57,13 @@ int main(int argc, char **argv)
 
     string MUL_INDEX_str = string(argv[6]);
     int MUL_INDEX_HASH_COUNT = stoi(MUL_INDEX_str.substr(4));
-    cout << MUL_INDEX_HASH_COUNT << "!" << endl;
-    string count_index = string(&(string(argv[7])[6]));
+    //cout << MUL_INDEX_HASH_COUNT << "!" << endl;
+
+    string MIH_BLOCK = string(argv[7]);
+    int MIT_BLOCK_SIZE = stoi(MIH_BLOCK.substr(6));
+    cout << MIT_BLOCK_SIZE << "!" << endl;
+
+    string count_index = string(&(string(argv[8])[6]));
 
     string file_name = "RGBD_";
     
@@ -83,6 +88,8 @@ int main(int argc, char **argv)
         file_name += "nomih_";
     }
 
+    file_name += "blocksize" + to_string(MIT_BLOCK_SIZE) + "_";
+    
     file_name += count_index;
     open_file(file_path,file_name);
 
@@ -118,7 +125,7 @@ int main(int argc, char **argv)
     }
 
     // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::RGBD,true,gfs,MUL_INDEX_HASH_COUNT);
+    ORB_SLAM2::System SLAM(argv[1],argv[2],ORB_SLAM2::System::RGBD,true,gfs,MUL_INDEX_HASH_COUNT,MIT_BLOCK_SIZE);
 
     // Vector for tracking time statistics
     vector<float> vTimesTrack;

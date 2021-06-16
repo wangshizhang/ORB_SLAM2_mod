@@ -449,7 +449,7 @@ int Optimizer::PoseOptimization(Frame *pFrame)
     return nInitialCorrespondences-nBad;
 }
 
-void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap,bool GOOD_FEATURE_SELECT = false,int MUL_INDEX_HASH_COUNT = 1)
+void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap,bool GOOD_FEATURE_SELECT = false,int MUL_INDEX_HASH_COUNT = 1,int MIH_BLOCK_SIZE = 10)
 {    
 // set start time
     clock_t  start_time,step1_time, step2_time,step3_time,step_gfs1_time,step_gfs2_time,step_mih1_time,step_mih2_time;
@@ -522,7 +522,6 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
             int32_t  des_bitsize = Descriptor_now.cols;
             int32_t  block_size = des_bitsize / multi_count;
             
-            //cout << Descriptor_now << "!!!!" << endl;
             // add to MIH with different part of descriptor
             for(int i = 0;i < multi_count;i ++)
             {
@@ -535,7 +534,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
                 int64_t key_int = des_mat2key(key_mat);
 
                 // 这里看看map性质，如果key不存在是怎么做的，先试试
-                if(MIH[i][key_int].size() <  10)
+                if(MIH[i][key_int].size() <  MIH_BLOCK_SIZE)
                     MIH[i][key_int].push_back(point_now);
                 else
                 {

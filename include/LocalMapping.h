@@ -40,10 +40,11 @@ class Map;
 class LocalMapping
 {
 public:
-    LocalMapping(Map* pMap, const float bMonocular,bool GOOD_FEATURE_SELECT,int MUL_INDEX_HASH_COUNT);
+    LocalMapping(Map* pMap, const float bMonocular,bool GOOD_FEATURE_SELECT,int MUL_INDEX_HASH_COUNT,int MIT_BLOCK_SIZE);
 
     bool GOOD_FEATURE_SELECT;
     int MUL_INDEX_HASH_COUNT;
+    int MIT_BLOCK_SIZE;
     
     void SetLoopCloser(LoopClosing* pLoopCloser);
 

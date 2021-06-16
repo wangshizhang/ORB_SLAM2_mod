@@ -30,9 +30,9 @@
 namespace ORB_SLAM2
 {
 
-LocalMapping::LocalMapping(Map *pMap, const float bMonocular,bool GOOD_FEATURE_SELECT,int MUL_INDEX_HASH_COUNT):
+LocalMapping::LocalMapping(Map *pMap, const float bMonocular,bool GOOD_FEATURE_SELECT,int MUL_INDEX_HASH_COUNT,int MIT_BLOCK_SIZE):
     mbMonocular(bMonocular), mbResetRequested(false), mbFinishRequested(false), mbFinished(true), mpMap(pMap),
-    mbAbortBA(false), mbStopped(false), mbStopRequested(false), mbNotStop(false), mbAcceptKeyFrames(true),GOOD_FEATURE_SELECT(GOOD_FEATURE_SELECT),MUL_INDEX_HASH_COUNT(MUL_INDEX_HASH_COUNT)
+    mbAbortBA(false), mbStopped(false), mbStopRequested(false), mbNotStop(false), mbAcceptKeyFrames(true),GOOD_FEATURE_SELECT(GOOD_FEATURE_SELECT),MUL_INDEX_HASH_COUNT(MUL_INDEX_HASH_COUNT),MIT_BLOCK_SIZE(MIT_BLOCK_SIZE)
 {
 }
 
@@ -80,7 +80,7 @@ void LocalMapping::Run()
             {
                 // Local BA
                 if(mpMap->KeyFramesInMap()>2)
-                    Optimizer::LocalBundleAdjustment(mpCurrentKeyFrame,&mbAbortBA, mpMap,GOOD_FEATURE_SELECT,MUL_INDEX_HASH_COUNT);
+                    Optimizer::LocalBundleAdjustment(mpCurrentKeyFrame,&mbAbortBA, mpMap,GOOD_FEATURE_SELECT,MUL_INDEX_HASH_COUNT,MIT_BLOCK_SIZE);
 
                 // Check redundant local Keyframes
                 KeyFrameCulling();

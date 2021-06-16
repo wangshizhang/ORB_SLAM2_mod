@@ -62,6 +62,7 @@
         "typeinfo": "cpp",
         "core": "cpp",
         "queue": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "*.ipp": "cpp"
     }
 }

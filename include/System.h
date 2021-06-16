@@ -61,11 +61,12 @@ public:
     bool GOOD_FEATURE_SELECT;
     //MIH setting
     int MUL_INDEX_HASH_COUNT;
+    int MIT_BLOCK_SIZE;
 
 public:
 
     // Initialize the SLAM system. It launches the Local Mapping, Loop Closing and Viewer threads.
-    System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true,bool GOOD_FEATURE_SELECT = false,int MUL_INDEX_HASH_COUNT = 1);
+    System(const string &strVocFile, const string &strSettingsFile, const eSensor sensor, const bool bUseViewer = true,bool GOOD_FEATURE_SELECT = false,int MUL_INDEX_HASH_COUNT = 1,int MIT_BLOCK_SIZE=10);
 
     // Proccess the given stereo frame. Images must be synchronized and rectified.
     // Input images: RGB (CV_8UC3) or grayscale (CV_8U). RGB is converted to grayscale.

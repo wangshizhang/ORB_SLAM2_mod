@@ -42,6 +42,7 @@ void open_file_mih(string dir_path,string file_name)
 		cout << "Making new directory for this dataset !" << endl;
     	mih_output<< "Feature Covisibility"<< "," << "MIH Feature Selected"<<endl;
 	}
+}
 void write_file_mih(double  cov_count,double mih_count)
 {
     mih_output << cov_count <<"," << mih_count << endl;
