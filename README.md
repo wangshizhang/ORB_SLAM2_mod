@@ -98,7 +98,7 @@ code github : https://github.com/wangshizhang/ORB_SLAM2_mod
 
 #### Time Comparison
 
-可以看出，分为4段和8段对于特征点的筛选较强，显著加速了localBA的过程。而分为16段和32段，由于匹配时间的上升，不仅没有加速，反而降低了速度。
+可以看出，分为4,8,11段对于特征点的筛选较强，显著加速了localBA的过程。而分为16段和32段，由于匹配时间的上升，不仅没有加速，反而降低了速度。
 
 
 ![image](test_pics/rgbd_dataset_freiburg1_360_time_res_ratio_MIH.jpg)
@@ -112,7 +112,7 @@ code github : https://github.com/wangshizhang/ORB_SLAM2_mod
 
 #### Points Selecting Comparison
 
-这里我对localBA过程中，Map Points的数量做了对比。可以看出，分为4段和8段在特征点选取数量上是接近的，这也解释了为何上面的run time他们也有相似的表现。而分为16段和32段，map points数量和原始的就比较接近了，这也是为什么速度没有得到提升的原因，因为问题规模没有得到有效的减小。
+这里我对localBA过程中，Map Points的数量做了对比。可以看出，分为4,8,11段在特征点选取数量上是逐步上升的，这也解释了为何上面的run time他们也有相似的表现。而分为16段和32段，map points数量和原始的就比较接近了，这也是为什么速度没有得到提升的原因，因为问题规模没有得到有效的减小。
 
 ![image](test_pics/rgbd_dataset_freiburg1_360%20Feature%20Selection.jpg)
 
@@ -124,7 +124,7 @@ code github : https://github.com/wangshizhang/ORB_SLAM2_mod
 
 #### Error comparison
 
-同样的，我们需要对精度进行测试。从精度结果上看，虽然分为4段和8段的运行速度是相近的，但是在精度上，8段的MIH可以比4段保持更好的误差精度，这提示我们，虽然它们筛选出的特征点数量相似，但质量是不一样的，从而在多个dataset上都呈现着牺牲一定的精度但获取了更好的速度的结果。16段和32段，正如我们所预想的，由于没有对特征点进行有效的减小，精度和原始ORB-SLAM2并没有明显的区分。
+同样的，我们需要对精度进行测试。从精度结果上看，4，8，11精度是慢慢提升的，虽然有时候数量接近。这提示我们，虽然它们筛选出的特征点数量相似，但质量是不一样的，从而在多个dataset上都呈现着牺牲一定的精度但获取了更好的速度的结果。16段和32段，正如我们所预想的，由于没有对特征点进行有效的减小，精度和原始ORB-SLAM2并没有明显的区分。
 
 ![image](test_pics/rgbd_dataset_freiburg1_360_error_std_res_MIH.jpg)
 
@@ -145,7 +145,10 @@ code github : https://github.com/wangshizhang/ORB_SLAM2_mod
 - Multi-index Hash则是获得了较好的符合预期的结果，即牺牲了一定的精度，获得了稳定的速度的提升。但和paper结果所提出的32段效果最好，结论不一致。其原因可能有两方面，第一，Multi-index Hash中特征点的取舍策略可能影响结果；第二，测试过程中发现4段和8段虽然筛选了特征点，但看起来已经达到了hash table所设置的最大特征点数量，这意味着随着特征点数量进一步上升，这样的Multi-index Hash很可能会丢失掉有效的特征点。
 
 因此，对于Multi-index Hash的改进，我还会进行进一步的测试。同时，还将进行其他可行LocalBA的改进尝试。
-
+- 2020.6.23 更新
+	- 1、特征点数量的限制取决于当前keyframe的特征点数量，而不是hash table size，这一点已做过验证，发现哪怕分为32段最细，一个hash table里也就10+的数量，远远达不到受限的程度。
+	- 2、增加了11段的处理，效果显著。（不整除，最后tail只有16位，其他的是32位）
+	- 3、由于orb以char型储存限制，没有做char的8位打碎处理，但结论也是可以预见的。即，匹配的段数越多，每一段越细，越接近原始orb，速度越慢。其中在8-16段中，会存在比较好的不显著降低精度，同时提升速度的结果。
 # ORB-SLAM2
 **Authors:** [Raul Mur-Artal](http://webdiis.unizar.es/~raulmur/), [Juan D. Tardos](http://webdiis.unizar.es/~jdtardos/), [J. M. M. Montiel](http://webdiis.unizar.es/~josemari/) and [Dorian Galvez-Lopez](http://doriangalvez.com/) ([DBoW2](https://github.com/dorian3d/DBoW2))
 
