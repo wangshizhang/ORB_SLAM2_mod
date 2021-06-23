@@ -40,8 +40,13 @@ void open_file_mih(string dir_path,string file_name)
 	if(opendir(&dir_path[0]) == NULL)
 	{
 		cout << "Making new directory for this dataset !" << endl;
-    	mih_output<< "Feature Covisibility"<< "," << "MIH Feature Selected"<<endl;
+		mkdir(&dir_path[0],0777);
 	}
+
+    string file_name_final = dir_path+ file_name + "_points.csv"; 
+	cout << file_name_final << endl;
+    mih_output.open(file_name_final,ios::out|ios::trunc);
+	mih_output<< "Feature Covisibility"<< "," << "MIH Feature Selected"<<endl;
 }
 void write_file_mih(double  cov_count,double mih_count)
 {

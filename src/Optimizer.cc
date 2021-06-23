@@ -493,7 +493,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
     // 将在这里进行Points的筛选，即对已经加入localmap的 points做相似度匹配。
     // 由于这是满足covisible的，做完筛选就可以了
     step_mih1_time = clock();
-
+    //cout << MIH_BLOCK_SIZE << "???" << endl;
     if(MUL_INDEX_HASH_COUNT != 1)
     {
         // 看起来这个不分mono和stereo
@@ -522,11 +522,16 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
             int32_t  des_bitsize = Descriptor_now.cols;
             int32_t  block_size = des_bitsize / multi_count;
             
+            if(multi_count == 11)
+                block_size = 3;
             // add to MIH with different part of descriptor
             for(int i = 0;i < multi_count;i ++)
             {
                 int32_t  index_start =  i  * block_size;
                 int32_t  index_end  = (i + 1) * block_size; 
+
+                if(index_end > des_bitsize)
+                    index_end = des_bitsize;
 
                 auto key_mat = Descriptor_now.colRange(index_start,index_end);
                 // Transfer the mat to hash key
@@ -544,18 +549,20 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
             }
         }
 
+
         // test the adding
-        /*
-        for(int i = 0;i < multi_count;i ++)
-        {
-            cout <<  i <<"!!" << MIH[i].size()<< endl;
-            for(auto map_pt = MIH[i].begin();map_pt != MIH[i].end();map_pt ++)
-            {
-                //cout  << map_pt->first  << ":  " << map_pt->second .size() << endl;
-                ;
-            }
-        }
-        */
+        
+        // for(int i = 0;i < multi_count;i ++)
+        // {
+        //     cout <<  i <<"!!" << MIH[i].size()<< endl;
+        //     for(auto map_pt = MIH[i].begin();map_pt != MIH[i].end();map_pt ++)
+        //     {
+        //         if( map_pt->second .size() > 10)
+        //             cout  << map_pt->first  << ":  " << map_pt->second .size() << endl;
+                
+        //     }
+        // }
+        
 
         // Find subset of LocalMapPoints with points of KeyFrame now
         set<MapPoint *> points_now = pKF->GetMapPoints();
@@ -569,12 +576,19 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
             int32_t  des_bitsize = Descriptor_now.cols;
             int32_t  block_size = des_bitsize / multi_count;
 
+            if(multi_count == 11)
+                block_size = 3;
+
             // get the vector of MapPoint pointers and sum them up
             for(int i = 0;i < multi_count;i ++)
             {
                 // find the cooperated in MIH
                 int32_t  index_start =  i  * block_size;
                 int32_t  index_end  = (i + 1) * block_size; 
+
+                if(index_end > des_bitsize)
+                    index_end = des_bitsize;
+
                 auto key_mat = Descriptor_now.colRange(index_start,index_end);
 
                 int64_t key_int = des_mat2key(key_mat);

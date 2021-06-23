@@ -81,7 +81,7 @@ int main(int argc, char **argv)
     {
         cout << "Start Multi-index Hash Selecting!" << endl;
         file_name += "mih"+ to_string(MUL_INDEX_HASH_COUNT) +"_" ;
-        open_file_mih(file_path,file_name+count_index);
+        open_file_mih(file_path,file_name+"blocksize" + to_string(MIT_BLOCK_SIZE) + "_" + count_index);
     }
     else
     {
@@ -89,7 +89,7 @@ int main(int argc, char **argv)
     }
 
     file_name += "blocksize" + to_string(MIT_BLOCK_SIZE) + "_";
-    
+
     file_name += count_index;
     open_file(file_path,file_name);
 
