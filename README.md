@@ -6,7 +6,7 @@ code github : https://github.com/wangshizhang/ORB_SLAM2_mod
 
 ## Introduction
 
-根据苏丹哥提供的一篇paper "Good Graph to Optimize: Cost-Effective,Budget-Aware Bundle Adjustment in Visual SLAM"，其中做了三个改进。代码已开源，github地址https://github.com/ivalab/gf_orb_slam2
+根据一篇paper "Good Graph to Optimize: Cost-Effective,Budget-Aware Bundle Adjustment in Visual SLAM"，其中做了三个改进。代码已开源，github地址https://github.com/ivalab/gf_orb_slam2
 
 - 1、Good Feature Select。针对local BA中，对于observation也就是待优化图中edge的筛选。
 - 2、Multi-index Hash。针对local BA中，由共视产生的特征点的进一步筛选。
