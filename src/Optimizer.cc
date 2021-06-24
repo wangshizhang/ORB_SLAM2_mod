@@ -499,6 +499,9 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
         // 看起来这个不分mono和stereo
 
         int multi_count = MUL_INDEX_HASH_COUNT;//set the seperate count of MIH. Can be [4,8,16,32], while the hash key to be [64,32,16,8] bits
+        if(multi_count < 0)
+            multi_count = -multi_count;
+
         vector<MapPoint*> sub_lLocalMapPoints;
         // unordered_map <cv::Mat ,  vector <MapPoint*>> test_MIH;
         // vector <unordered_map <cv::Mat ,  vector <MapPoint*>>> MIH(multi_count, test_MIH);
@@ -522,7 +525,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
             int32_t  des_bitsize = Descriptor_now.cols;
             int32_t  block_size = des_bitsize / multi_count;
             
-            if(multi_count == 11)
+            if(multi_count == 11 || multi_count == -11)
                 block_size = 3;
             // add to MIH with different part of descriptor
             for(int i = 0;i < multi_count;i ++)
@@ -576,7 +579,7 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
             int32_t  des_bitsize = Descriptor_now.cols;
             int32_t  block_size = des_bitsize / multi_count;
 
-            if(multi_count == 11)
+            if(multi_count == 11 || multi_count == -11)
                 block_size = 3;
 
             // get the vector of MapPoint pointers and sum them up
@@ -602,12 +605,22 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
         }
         write_file_mih(lLocalMapPoints.size(),points_MIH_select.size());
         
-        // remove the original map points
-        lLocalMapPoints.clear();
-        lLocalMapPoints.assign(points_MIH_select.begin(),points_MIH_select.end());
          //cout << "Original Local Map Points count" << lLocalMapPoints.size() << endl;
          //cout << "MIH selected Local Map Points count" << points_MIH_select.size() <<endl;
-         
+         //cout << multi_count << "!!?" << endl;
+         if(MUL_INDEX_HASH_COUNT < 0)
+         {
+             // only use the tail points for comparison
+             lLocalMapPoints.reverse();
+             lLocalMapPoints.resize(points_MIH_select.size());
+             //cout << "Original Local Map Points count" << lLocalMapPoints.size() << endl;
+         }
+         else
+         {
+            // remove the original map points
+            lLocalMapPoints.clear();
+            lLocalMapPoints.assign(points_MIH_select.begin(),points_MIH_select.end());
+         }
     }
         step_mih2_time = clock();
     

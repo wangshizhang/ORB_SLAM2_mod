@@ -149,6 +149,8 @@ code github : https://github.com/wangshizhang/ORB_SLAM2_mod
 	- 1、特征点数量的限制取决于当前keyframe的特征点数量，而不是hash table size，这一点已做过验证，发现哪怕分为32段最细，一个hash table里也就10+的数量，远远达不到受限的程度。
 	- 2、增加了11段的处理，效果显著。（不整除，最后tail只有16位，其他的是32位）
 	- 3、由于orb以char型储存限制，没有做char的8位打碎处理，但结论也是可以预见的。即，匹配的段数越多，每一段越细，越接近原始orb，速度越慢。其中在8-16段中，会存在比较好的不显著降低精度，同时提升速度的结果。
+- 2020.6.24 更新
+	- 对于11段，设置了对照组，对于筛选出的点，在原始点中选取数量相当的点作为对照（不是随机的，为了方便，直接截取list末尾的点）。结果可以看出，原始筛出的点对于精度有更好的保持。而任意截取，系统的精度会明显下降（更容易跑飞，鲁棒性下降）。
 # ORB-SLAM2
 **Authors:** [Raul Mur-Artal](http://webdiis.unizar.es/~raulmur/), [Juan D. Tardos](http://webdiis.unizar.es/~jdtardos/), [J. M. M. Montiel](http://webdiis.unizar.es/~josemari/) and [Dorian Galvez-Lopez](http://doriangalvez.com/) ([DBoW2](https://github.com/dorian3d/DBoW2))
 
