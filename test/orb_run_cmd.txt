@@ -1,0 +1,15 @@
+
+
+
+RGBD:
+	python accociate.py TUM/rgbd_dataset_freiburg1_room/rgb.txt TUM/rgbd_dataset_freiburg1_room/depth.txt > TUM/rgbd_dataset_freiburg1_room/associations.txt
+	
+	./Examples/RGB-D/rgbd_tum Vocabulary/ORBvoc.txt Examples/RGB-D/TUM1.yaml ~/dataset/TUM/rgbd_dataset_freiburg1_xyz/ ~/dataset/TUM/rgbd_dataset_freiburg1_xyz/associations.txt gfs=0 mih=1 index=0
+
+#MIH = [1,4,8,16,32]
+
+	./Examples/Monocular/mono_tum Vocabulary/ORBvoc.txt Examples/Monocular/TUM1.yaml ~/dataset/TUM/rgbd_dataset_freiburg1_xyz/ {0,1}
+
+	~/orb_slam2/ORB_SLAM2_mod/Examples/RGB-D/rgbd_tum ~/orb_slam2/ORB_SLAM2_mod/Vocabulary/ORBvoc.txt ~/orb_slam2/ORB_SLAM2_mod/Examples/RGB-D/TUM1.yaml ~/dataset/TUM/Blender_TUM/room_long/ ~/dataset/TUM/Blender_TUM/room_long/associate_blender.txt gfs=0 mih=8 block=10 index=$count;
+
+	~/orb_slam2/ORB_SLAM2_mod/Examples/RGB-D/rgbd_tum ~/orb_slam2/ORB_SLAM2_mod/Vocabulary/ORBvoc.txt ~/orb_slam2/ORB_SLAM2_mod/Examples/RGB-D/TUM1.yaml ~/dataset/TUM/room_roaming/ ~/dataset/TUM/room_roaming/associate_blender.txt gfs=0 mih=4 block=10 index=88;

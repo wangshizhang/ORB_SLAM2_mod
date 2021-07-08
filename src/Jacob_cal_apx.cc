@@ -105,7 +105,10 @@ double logdet(MatrixXd & mat)
      LLT<MatrixXd> chol_mat(mat);
      MatrixXd L = chol_mat.matrixL();
 
-     double logdet_res = log10(L.diagonal().array().sum());
+    double det_sum = L.diagonal().array().sum();
+    double logdet_res = -1000000;
+    if(det_sum > 0.001)// condition for rather small matrix det value
+      logdet_res = log10(det_sum);
 
      return logdet_res;
 }

@@ -949,6 +949,17 @@ void Optimizer::LocalBundleAdjustment(KeyFrame *pKF, bool* pbStopFlag, Map* pMap
             // cout << Hc_mul << endl;
             // cout << logdet(Hc_mul) << endl;
         }
+
+        // Good select mod
+        // edge.vertex[1] to get camera pose vertex
+        // use vertex.id() to get the index of certain hash table
+         
+        // Init Hc hash table
+
+        // Add hash table and remove edges
+
+        // final edges
+
         int queue_half_size = int(logdet_queue.size()*gfs_ratio);
 
         vpEdgesStereo.clear();// here may need modify

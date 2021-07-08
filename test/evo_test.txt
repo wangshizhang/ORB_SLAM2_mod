@@ -1,0 +1,6 @@
+
+evo_traj tum groundtruth.txt --save_as_tum
+
+evo_ape tum groundtruth.tum CameraTrajectory_gfs.txt -va --plot
+
+evo_ape tum groundtruth.tum CameraTrajectory_nogfs.txt -va --plot
