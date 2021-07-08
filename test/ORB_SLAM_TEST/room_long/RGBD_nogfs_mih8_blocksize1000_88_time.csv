@@ -1,0 +1,4 @@
+step 1: Preprocess,step 2: Multi-index Hash Selecting,step 3: Optimizer Insert  process,step 4: Good Feature Select,step 5: Optimizer Optimization,step 6: Postprocess
+99,3979,2473,1,7386,2961
+133,3924,1221,1,11276,3045
+123,4478,1361,0,8471,2736
