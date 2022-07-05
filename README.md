@@ -145,11 +145,11 @@ code github : https://github.com/wangshizhang/ORB_SLAM2_mod
 - Multi-index Hash则是获得了较好的符合预期的结果，即牺牲了一定的精度，获得了稳定的速度的提升。但和paper结果所提出的32段效果最好，结论不一致。其原因可能有两方面，第一，Multi-index Hash中特征点的取舍策略可能影响结果；第二，测试过程中发现4段和8段虽然筛选了特征点，但看起来已经达到了hash table所设置的最大特征点数量，这意味着随着特征点数量进一步上升，这样的Multi-index Hash很可能会丢失掉有效的特征点。
 
 因此，对于Multi-index Hash的改进，我还会进行进一步的测试。同时，还将进行其他可行LocalBA的改进尝试。
-- 2020.6.23 更新
+- 2021.6.23 更新
 	- 1、特征点数量的限制取决于当前keyframe的特征点数量，而不是hash table size，这一点已做过验证，发现哪怕分为32段最细，一个hash table里也就10+的数量，远远达不到受限的程度。
 	- 2、增加了11段的处理，效果显著。（不整除，最后tail只有16位，其他的是32位）
 	- 3、由于orb以char型储存限制，没有做char的8位打碎处理，但结论也是可以预见的。即，匹配的段数越多，每一段越细，越接近原始orb，速度越慢。其中在8-16段中，会存在比较好的不显著降低精度，同时提升速度的结果。
-- 2020.6.24 更新
+- 2021.6.24 更新
 	- 对于11段，设置了对照组，对于筛选出的点，在原始点中选取数量相当的点作为对照（不是随机的，为了方便，直接截取list末尾的点）。结果可以看出，原始筛出的点对于精度有更好的保持。而任意截取，系统的精度会明显下降（更容易跑飞，鲁棒性下降）。
 # ORB-SLAM2
 **Authors:** [Raul Mur-Artal](http://webdiis.unizar.es/~raulmur/), [Juan D. Tardos](http://webdiis.unizar.es/~jdtardos/), [J. M. M. Montiel](http://webdiis.unizar.es/~josemari/) and [Dorian Galvez-Lopez](http://doriangalvez.com/) ([DBoW2](https://github.com/dorian3d/DBoW2))
